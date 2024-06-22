@@ -2,7 +2,7 @@ import buildTree from './treeBuilder.js';
 import formatter from './formatter/index.js';
 import { getFullPath, getData } from './functionsFS.js';
 
-const genDiff = (filepath1, filepath2, format = 'stylish') => {
+const genDiff = (filepath1, filepath2, formatName = 'stylish') => {
   const fullFilePath1 = getFullPath(filepath1);
   const fullFilePath2 = getFullPath(filepath2);
 
@@ -11,7 +11,7 @@ const genDiff = (filepath1, filepath2, format = 'stylish') => {
 
   const tree = buildTree(data1, data2);
 
-  return formatter(format, tree);
+  return formatter(formatName, tree);
 };
 
 export default genDiff;

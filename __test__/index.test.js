@@ -1,30 +1,25 @@
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import genDiff from '../src/genDiff.js';
-import fs from 'fs';
+import { getFullPath, readFile } from '../src/functionsFS.js';
+import genDiff from '../src/index.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-	const result = fs.readFileSync(path.join(__dirname, '..', '__fixtures__', 'result.txt'), 'utf-8');
+const result = readFile(getFullPath('./__fixtures__/result.txt'));
 
 test('genDiffExtensionJSON', () => {
-	const filePath1 = path.join(__dirname, '..', '__fixtures__', 'file1.json');
-	const filePath2 = path.join(__dirname, '..', '__fixtures__', 'file2.json');
+  const filePath1 = getFullPath('./__fixtures__/file1.json');
+  const filePath2 = getFullPath('./__fixtures__/file2.json');
 
-	expect(genDiff(filePath1, filePath2)).toEqual(result);
+  expect(genDiff(filePath1, filePath2)).toEqual(result);
 });
 
 test('genDiffExtensionYAML', () => {
-	const filePath1 = path.join(__dirname, '..', '__fixtures__', 'file1.yaml');
-	const filePath2 = path.join(__dirname, '..', '__fixtures__', 'file2.yaml');
+  const filePath1 = getFullPath('./__fixtures__/file1.yaml');
+  const filePath2 = getFullPath('./__fixtures__/file2.yaml');
 
-	expect(genDiff(filePath1, filePath2)).toEqual(result);
+  expect(genDiff(filePath1, filePath2)).toEqual(result);
 });
 
 test('genDiffExtensionYML', () => {
-	const filePath1 = path.join(__dirname, '..', '__fixtures__', 'file1.yml');
-	const filePath2 = path.join(__dirname, '..', '__fixtures__', 'file2.yml');
+  const filePath1 = getFullPath('./__fixtures__/file1.yml');
+  const filePath2 = getFullPath('./__fixtures__/file2.yml');
 
-	expect(genDiff(filePath1, filePath2)).toEqual(result);
+  expect(genDiff(filePath1, filePath2)).toEqual(result);
 });

@@ -3,23 +3,25 @@ import genDiff from '../src/index.js';
 
 const result = readFile(getFullPath('./__fixtures__/result.txt'));
 
-test('genDiffExtensionJSON', () => {
-  const filePath1 = getFullPath('./__fixtures__/file1.json');
-  const filePath2 = getFullPath('./__fixtures__/file2.json');
+const getFullPathFiles = (extension) => [
+  getFullPath(`./__fixtures__/file1${extension}`),
+  getFullPath(`./__fixtures__/file2${extension}`),
+];
 
-  expect(genDiff(filePath1, filePath2)).toEqual(result);
+test('genDiffExtensionJSON', () => {
+  const extension = '.json';
+
+  expect(genDiff(...getFullPathFiles(extension))).toEqual(result);
 });
 
 test('genDiffExtensionYAML', () => {
-  const filePath1 = getFullPath('./__fixtures__/file1.yaml');
-  const filePath2 = getFullPath('./__fixtures__/file2.yaml');
+  const extension = '.yaml';
 
-  expect(genDiff(filePath1, filePath2)).toEqual(result);
+  expect(genDiff(...getFullPathFiles(extension))).toEqual(result);
 });
 
 test('genDiffExtensionYML', () => {
-  const filePath1 = getFullPath('./__fixtures__/file1.yml');
-  const filePath2 = getFullPath('./__fixtures__/file2.yml');
+  const extension = '.yml';
 
-  expect(genDiff(filePath1, filePath2)).toEqual(result);
+  expect(genDiff(...getFullPathFiles(extension))).toEqual(result);
 });

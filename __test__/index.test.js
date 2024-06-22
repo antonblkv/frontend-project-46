@@ -3,6 +3,7 @@ import genDiff from '../src/index.js';
 
 const resultStylish = readFile(getFullPath('./__fixtures__/resultStylish.txt'));
 const resultPlain = readFile(getFullPath('./__fixtures__/resultPlain.txt'));
+const resultJSON = readFile(getFullPath('./__fixtures__/resultJSON.txt'));
 
 const getFullPathFiles = (extension) => [
   getFullPath(`./__fixtures__/file1${extension}`),
@@ -31,4 +32,16 @@ test('genDiffExtensionYAMLFormatterPlain', () => {
 
 test('genDiffExtensionYMLFormatterPlain', () => {
   expect(genDiff(...getFullPathFiles('.yml'), 'plain')).toEqual(resultPlain);
+});
+
+test('genDiffExtensionJSONFormatterJSON', () => {
+  expect(genDiff(...getFullPathFiles('.json'), 'json')).toEqual(resultJSON);
+});
+
+test('genDiffExtensionYAMLFormatterJSON', () => {
+  expect(genDiff(...getFullPathFiles('.yaml'), 'json')).toEqual(resultJSON);
+});
+
+test('genDiffExtensionYMLFormatterJSON', () => {
+  expect(genDiff(...getFullPathFiles('.yml'), 'json')).toEqual(resultJSON);
 });

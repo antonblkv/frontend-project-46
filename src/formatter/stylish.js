@@ -1,76 +1,51 @@
 import _ from 'lodash';
 
-const stringify = (value, depth, replacer = ' ', spacesCount = 4) => {
-  const iter = (currentValue, iterDepth) => {
-    if (!_.isObject(currentValue)) {
-      return `${currentValue}`;
-    }
+const replacer = ' ';
+const doubleSpace = '  ';
+const spacesCount = 4;
 
-    const indentSize = iterDepth * spacesCount;
-    const currentIndent = replacer.repeat(indentSize);
-    const bracketIndent = replacer.repeat(indentSize - spacesCount);
-    const lines = Object.entries(currentValue).map(
-      ([key, val]) => `${currentIndent}${key}: ${iter(val, iterDepth + 1)}`,
-    );
+const getIndent = (depth) => replacer.repeat(depth * spacesCount).slice(0, -2);
 
-    return ['{', ...lines, `${bracketIndent}}`].join('\n');
-  };
-
-  return iter(value, depth);
+const stringify = (value, depth) => {
+  if (!_.isPlainObject(value)) {
+    return String(value);
+  }
+  const lines = Object.entries(value).map(
+    ([key, val]) => `${getIndent(depth + 1)}  ${key}: ${stringify(val, depth + 1)}`,
+  );
+  return `{\n${lines.join('\n')}\n${getIndent(depth)}${doubleSpace}}`;
 };
 
-const stylish = (tree, replacer = ' ', spacesCount = 4) => {
-  const iter = (currentNode, depth) => {
-    const indentSize = depth * spacesCount;
-    const currentIndent = replacer.repeat(indentSize);
-    const currentIndentWithSymbol = replacer.repeat(indentSize - 2);
-    const bracketIndent = replacer.repeat(indentSize);
-    let { value } = currentNode;
-    let { value1 } = currentNode;
-    let { value2 } = currentNode;
-
-    if (_.has(currentNode, 'value') && _.isPlainObject(currentNode.value)) {
-      value = stringify(currentNode.value, depth + 1);
+const iter = (tree, depth = 1) => {
+  const result = tree.flatMap(({
+    type, key, children, value, value1, value2,
+  }) => {
+    switch (type) {
+      case 'nested': {
+        return `${getIndent(depth)}  ${key}: {\n${iter(children, depth + 1).join('\n')}\n${getIndent(
+          depth,
+        )}${doubleSpace}}`;
+      }
+      case 'deleted': {
+        return `${getIndent(depth)}- ${key}: ${stringify(value, depth)}`;
+      }
+      case 'added': {
+        return `${getIndent(depth)}+ ${key}: ${stringify(value, depth)}`;
+      }
+      case 'changed': {
+        return `${getIndent(depth)}- ${key}: ${stringify(value1, depth)}\n${getIndent(depth)}+ ${key}: ${stringify(
+          value2,
+          depth,
+        )}`;
+      }
+      case 'unchanged': {
+        return `${getIndent(depth)}  ${key}: ${stringify(value, depth)}`;
+      }
+      default:
+        throw new Error(`Error: ${type} - this type doesn't exist in this file`);
     }
-
-    if (_.has(currentNode, 'value1') && _.isPlainObject(currentNode.value1)) {
-      value1 = stringify(currentNode.value1, depth + 1);
-    }
-
-    if (_.has(currentNode, 'value2') && _.isPlainObject(currentNode.value2)) {
-      value2 = stringify(currentNode.value2, depth + 1);
-    }
-
-    if (currentNode.type === 'added') {
-      return `${currentIndentWithSymbol}+ ${currentNode.key}: ${value}`;
-    }
-
-    if (currentNode.type === 'deleted') {
-      return `${currentIndentWithSymbol}- ${currentNode.key}: ${value}`;
-    }
-
-    if (currentNode.type === 'unchanged') {
-      return `${currentIndentWithSymbol}  ${currentNode.key}: ${value}`;
-    }
-
-    if (currentNode.type === 'changed') {
-      return [
-        `${currentIndentWithSymbol}- ${currentNode.key}: ${value1}`,
-        `${currentIndentWithSymbol}+ ${currentNode.key}: ${value2}`,
-      ];
-    }
-
-    if (currentNode.type === 'nested') {
-      return [
-        `${currentIndent}${currentNode.key}: {`,
-        ...currentNode.children.flatMap((child) => iter(child, depth + 1)),
-        `${bracketIndent}}`,
-      ];
-    }
-    return ['{', ...currentNode.flatMap((node) => iter(node, depth)), '}'].join('\n');
-  };
-
-  return iter(tree, 1);
+  });
+  return result;
 };
 
-export default stylish;
+export default (tree) => `{\n${iter(tree).join('\n')}\n}`;

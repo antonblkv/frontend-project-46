@@ -1,47 +1,39 @@
 import _ from 'lodash';
 
-const getValue = (node) => {
-  if (_.has(node, 'value')) {
-    if (_.isPlainObject(node.value)) return '[complex value]';
+const getValue = (value) => {
+  if (_.isPlainObject(value)) return '[complex value]';
 
-    const value = typeof node.value === 'string' ? `'${node.value}'` : node.value;
+  if (typeof value === 'string') return `'${value}'`;
 
-    return value;
-  }
-
-  let value1 = typeof node.value1 === 'string' ? `'${node.value1}'` : node.value1;
-
-  if (_.isPlainObject(node.value1)) value1 = '[complex value]';
-
-  let value2 = typeof node.value2 === 'string' ? `'${node.value2}'` : node.value2;
-
-  if (_.isPlainObject(node.value2)) value2 = '[complex value]';
-
-  return [value1, value2];
+  return value;
 };
 
-const plain = (tree) => {
-  const iter = (currentNode, path) => {
-    if (currentNode.type === 'added') {
-      const value = getValue(currentNode);
-      return `Property '${path}' was added with value: ${value}`;
-    }
+const iter = (tree, path = '') => {
+  const result = tree
+    .filter((node) => node.type !== 'unchanged')
+    .flatMap(({
+      type, key, children, value, value1, value2,
+    }) => {
+      const fullPath = path === '' ? `${key}` : `${path}.${key}`;
 
-    if (currentNode.type === 'deleted') {
-      return `Property '${path}' was removed`;
-    }
-
-    if (currentNode.type === 'changed') {
-      const [value1, value2] = getValue(currentNode);
-      return `Property '${path}' was updated. From ${value1} to ${value2}`;
-    }
-
-    return currentNode.children
-      .filter((child) => child.type !== 'unchanged')
-      .flatMap((child) => iter(child, `${path}.${child.key}`))
-      .join('\n');
-  };
-  return [...tree.filter((node) => node.type !== 'unchanged').flatMap((node) => iter(node, `${node.key}`))].join('\n');
+      switch (type) {
+        case 'nested': {
+          return iter(children, fullPath);
+        }
+        case 'deleted': {
+          return `Property '${fullPath}' was removed`;
+        }
+        case 'added': {
+          return `Property '${fullPath}' was added with value: ${getValue(value)}`;
+        }
+        case 'changed': {
+          return `Property '${fullPath}' was updated. From ${getValue(value1)} to ${getValue(value2)}`;
+        }
+        default:
+          throw new Error(`Error: ${type} - this type doesn't exist in this file`);
+      }
+    });
+  return result;
 };
 
-export default plain;
+export default (tree) => iter(tree).join('\n');
